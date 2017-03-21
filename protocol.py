@@ -31,7 +31,7 @@ class Downloader:
             self.status = '0'
             if num_retries > 0:
                 if hasattr(e, 'code') and 500 <= e.reason < 600:
-                    return download(url, num_retries-1)
+                    return Downloader.HTMLdownload(num_retries-1)
         return html
 
 

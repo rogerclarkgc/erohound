@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*- 
 import urllib, urllib2
+import string
 import re
 import itertools
 import urlparse
@@ -7,22 +8,24 @@ import datetime
 import itchat
 from bs4 import BeautifulSoup as bsp
 
+import protocol
+
 
 class kisssub:
 
-    def __init__(self, html = None):
+    def __init__(self, html=None):
         self.status = False
         self.html = html
         self.anilist = {}
-        self.select = {"mon":["mon", "Mon", "Monday", "1"],
-                       "tue":["tue", "Tue", "Tuesday", "2"],
-                       "wed":["wed", "Wed", "Wednesday", "3"],
-                       "thu":["thu", "Thu", "Thursday", "4"],
-                       "fri":["fri", "Fri", "Friday", "5"],
-                       "sat":["sat", "Sat", "Saturday", "6"],
-                       "sun":["sun", "Sun", "Sunday", "7"],
-                       "today":["today", "Today", "now", "0"],
-                       "all":["all", "All", "9"]}
+        self.select = {"mon" :["mon", "Mon", "Monday", "1"],
+                       "tue" :["tue", "Tue", "Tuesday", "2"],
+                       "wed" :["wed", "Wed", "Wednesday", "3"],
+                       "thu" :["thu", "Thu", "Thursday", "4"],
+                       "fri" :["fri", "Fri", "Friday", "5"],
+                       "sat" :["sat", "Sat", "Saturday", "6"],
+                       "sun" :["sun", "Sun", "Sunday", "7"],
+                       "today" :["today", "Today", "now", "0"],
+                       "all" :["all", "All", "9"]}
 
 
 
@@ -145,6 +148,48 @@ class kisssub:
 
             
         return self.anilist[how]
+
+    ##got an anime's search key ,the name of anime must fully match the index of kisssub.org
+    ##the link which contained chines characters has transformed to qutet style
+    def GotSearchKey(self, aniname = None):
+        soup = bsp(self.html, 'lxml')
+        soup_find = soup.find_all('a', text = aniname.decode('utf-8'))
+        if len(soup_find) <= 0:
+            raise RuntimeError('can not find anime,check your input')
+        key = urllib.quote(soup_find[0]['href'].encode('utf-8'), safe = string.printable)
+        return key
+
+    ##got the magnet of an animat
+    def GotMagnet(self, search = None):
+        ##use protocol.Downlaod to download search result page
+        key = self.GotSearchKey(aniname = search)
+        baseURL = "http://www.kisssub.org/"
+        abURL = baseURL + key
+        downloader = protocol.Downloader(url = abURL)
+        findHTML = downloader.HTMLdownload()
+        find_soup = bsp(findHTML, 'lxml')
+        if len(find_soup.find_all('td', colspan = re.compile('.*?'))) >= 1:
+            raise RuntimeError('can not find anime! check your input')
+        #find the animelist of search page
+        soup_time = find_soup.find_all('tr', class_ = re.compile('alt.*?'))
+        #find the first result of the search page
+        down_link = soup_time[0].find_all('a', href = re.compile('show.*?'))
+        #got the download page link
+        link = down_link[0]['href']
+        downlink = baseURL + link
+        #find the magnet link
+        magnet_down = protocol.Downloader(url = downlink)
+        magnetHTML = magnet_down.HTMLdownload()
+        magnet_soup = bsp(magnetHTML, 'lxml')
+        magnet_link = magnet_soup.find_all('a', id = 'magnet')[0]['href']
+        ani_message = magnet_soup.find_all('a', href = link)
+        print 'The information of this anime is:', ani_message[0].string
+        print 'I have found the magnet link of', search
+        return magnet_link
+
+class Email163:
+    pass
+
     
                     
 
