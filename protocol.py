@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*- 
-import urllib, urllib2
+import urllib
+import urllib2
 import re
 import itertools
 import urlparse
 import datetime
+
 import itchat
+
 from bs4 import BeautifulSoup as bsp
+"""
+class Downloader is a set of useful tools to download website content
+
+"""
 
 class Downloader:
 
@@ -14,8 +21,14 @@ class Downloader:
         self.user_agent = user_agent
         self.category = category
         self.status = None
+
+    # Description: htmldownload(self, num_retries = the retry time of downloading)
+    #
+    # use this function to download basic html source code of the website
+    #
+    # the return value of this function is a long str instance which contain the source code of website
     
-    def HTMLdownload(self, num_retries=2):
+    def htmldownload(self, num_retries=2):
         print 'Downloading:', self.url
         headers = {'User-agent':self.user_agent}
         request = urllib2.Request(self.url, headers = headers)
