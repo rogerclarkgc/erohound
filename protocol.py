@@ -10,11 +10,13 @@ import itchat
 
 from bs4 import BeautifulSoup as bsp
 """
-class Downloader is a set of useful tools to download website content
+This model contains some useful tools to make life easier
 
 """
 
-class Downloader:
+# class Downloader is a set of useful tools to download website content
+
+class Downloader(object):
 
     def __init__(self, url, user_agent='erohound', category = None):
         self.url = url
@@ -46,6 +48,12 @@ class Downloader:
                 if hasattr(e, 'code') and 500 <= e.reason < 600:
                     return Downloader.HTMLdownload(num_retries-1)
         return html
+
+
+class pshell(object):
+
+    def __init__(self):
+        pass
 
 
 
