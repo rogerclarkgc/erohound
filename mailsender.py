@@ -4,9 +4,10 @@
 
 
 
-import os
+import os, sys
+import getopt
 import time
-import imaplib, smtplib, email
+import imaplib, email
 import pprint
 import chardet
 import getpass
@@ -144,12 +145,52 @@ search_key = '(LARGER 10485760)', delete=False):
     else:
         client.logout()
 
-    def delmail(mailindex):
-        pass
+def delmail(mailindex):
+    pass
+
+def main(argv):
+    host = HOST_USTC
+    port = ENC_IMAP_USTC
+    username = getpass.username_ustc
+    passwd = getpass.passwd_ustc
+    search_key = '(FROM "rogerclark")'
+    savepath = '/home/roger/Documents'
+    delete_mes = False
+    shortparam = 'hH:P:u:p:k:s:d'
+    longparam = ["help", "delete", "host=", "port=", "username=", 'passwd=',
+    "searchkey=", "savepath="]
+    try:
+        opts, args = getopt.getopt(argv, shortparam, longparam)
+    except getopt.GetoptError:
+        print('''wrong parameters\n
+        mailsender.py -H [host] -P [port] -u [username] -p [passwd]
+        -k [searchkey] -s [savepath] -d [delete]''')
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print('''mailsender.py -H [host] -P [port] -u [username]
+            -p [passwd] -k [searchkey] -s [savepath] -d [delete]''')
+            sys.exit()
+        elif opt in ("-H", "--host"):
+            host = arg
+        elif opt in ("-P", "--port"):
+            port = arg
+        elif opt in ("-u", "--username"):
+            username = arg
+        elif opt in ("-p", "--passwd"):
+            passwd = arg
+        elif opt in ("-k", "--searchkey"):
+            search_key = arg
+        elif opt in ("-s", "--savepath"):
+            savepath = arg
+        elif opt in ("-d", "--delete"):
+            delete_mes = True
+    client = login_imap(host = host, port = port, username = username,
+    passwd = passwd)
+    fetch_imap(client, savepath = savepath, delete = delete_mes,
+    search_key = search_key)
+
+
 
 if __name__ == '__main__':
-    client = login_imap(host = HOST_USTC, port = ENC_IMAP_USTC,
-    username = getpass.username_ustc, passwd = getpass.passwd_ustc)
-    searchkey = '(FROM "rogerclark")'
-    fetch_imap(client, savepath='/home/roger/Documents', delete=True,
-    search_key=searchkey)
+
+    main(sys.argv[1:])
